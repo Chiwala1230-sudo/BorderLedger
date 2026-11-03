@@ -1,16 +1,13 @@
 package com.borderledger;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-// ABSTRACT CLASS: Cannot be instantiated directly (no 'new Trader()'). It exists to be inherited by the 3 subclasses.
 public abstract class Trader {
-    
-    // ENCAPSULATION: Fields are 'private'. No one outside this class can change them directly.
-    private final String id; 
+    private final String id;
     private String name;
-    private final List<Double> transactions;
+    private double startingCapital; // Added if your subclasses use startingCapital
+    protected List<Double> transactions;
 
     public Trader(String id, String name) {
         if (id == null || id.trim().isEmpty()) {
@@ -21,10 +18,38 @@ public abstract class Trader {
         }
         this.id = id;
         this.name = name;
-        this.transactions = new ArrayList<>(); // Initialize the list
+        this.startingCapital = 0.0; // Default or can be passed via overloaded constructor
+        this.transactions = new ArrayList<>();
     }
 
-    // --- GETTERS (The only way to read the private fields) ---
+    public Trader(String id, String name, double startingCapital) {
+        this(id, name);
+        if (startingCapital < 0) {
+            throw new IllegalArgumentException("Starting capital cannot be negative.");
+        }
+        this.startingCapital = startingCapital;
+    }
+
+    // --- HELPER METHOD ---
+    protected double getTotalTransactionVolume() {
+        double total = 0;
+        for (double amount : transactions) {
+            total += amount;
+        }
+        return total;
+    }
+
+    // Abstract method that subclasses must implement
+    public abstract double calculateScore() throws InsufficientHistoryException;
+
+    // Validation helper for minimum history
+    protected void requireMinimumHistory(int minTransactions) throws InsufficientHistoryException {
+        if (transactions.size() < minTransactions) {
+            throw new InsufficientHistoryException("Insufficient transaction history. Required: " + minTransactions + ", Found: " + transactions.size());
+        }
+    }
+
+    // Getters and Setters
     public String getId() {
         return id;
     }
@@ -33,21 +58,29 @@ public abstract class Trader {
         return name;
     }
 
-    // Defensive copy: returns an unmodifiable list so outside code can't sneak in and delete transactions.
-    public List<Double> getTransactions() {
-        return Collections.unmodifiableList(transactions);
+    public void setName(String name) {
+        this.name = name;
     }
 
-    // Concrete method: All traders share this behavior.
+    public double getStartingCapital() {
+        return startingCapital;
+    }
+
+    public void setStartingCapital(double startingCapital) {
+        if (startingCapital < 0) {
+            throw new IllegalArgumentException("Starting capital cannot be negative.");
+        }
+        this.startingCapital = startingCapital;
+    }
+
+    public List<Double> getTransactions() {
+        return transactions;
+    }
+
     public void addTransaction(double amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("Transaction amount cannot be negative.");
         }
-        this.transactions.add(amount);
+        transactions.add(amount);
     }
-
-    // ABSTRACT METHOD: The "Blank Section of the Form". 
-    // Every subclass (Informal, SemiFormal, Cooperative) MUST write its own version of this.
-    // It throws our Custom Exception if the trader hasn't logged enough sales yet.
-    public abstract double calculateDocumentScore() throws InsufficientHistoryException;
 }
