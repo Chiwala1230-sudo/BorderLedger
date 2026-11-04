@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-// ABSTRACT CLASS: Cannot be instantiated directly.
 public abstract class Trader {
     
     private final String id; 
@@ -42,6 +41,7 @@ public abstract class Trader {
         this.transactions.add(amount);
     }
 
+    // 🟢 NEW HELPER METHOD: This allows subclasses to see the total volume safely.
     protected double getTotalTransactionVolume() {
         double total = 0;
         for (double amount : transactions) {
@@ -50,6 +50,7 @@ public abstract class Trader {
         return total;
     }
 
+    // 🟢 NEW HELPER METHOD: This allows subclasses to throw the exception if they don't have enough history.
     protected void requireMinimumHistory(int minTransactions) throws InsufficientHistoryException {
         if (transactions.size() < minTransactions) {
             throw new InsufficientHistoryException("Not enough transactions.");
