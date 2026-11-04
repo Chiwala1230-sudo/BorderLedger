@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-// ABSTRACT CLASS: Cannot be instantiated directly (no 'new Trader()'). It exists to be inherited by the 3 subclasses.
 public abstract class Trader {
     
-    // ENCAPSULATION: Fields are 'private'. No one outside this class can change them directly.
     private final String id; 
     private String name;
     private final List<Double> transactions;
@@ -21,10 +19,9 @@ public abstract class Trader {
         }
         this.id = id;
         this.name = name;
-        this.transactions = new ArrayList<>(); // Initialize the list
+        this.transactions = new ArrayList<>(); 
     }
 
-    // --- GETTERS (The only way to read the private fields) ---
     public String getId() {
         return id;
     }
@@ -33,12 +30,10 @@ public abstract class Trader {
         return name;
     }
 
-    // Defensive copy: returns an unmodifiable list so outside code can't sneak in and delete transactions.
     public List<Double> getTransactions() {
         return Collections.unmodifiableList(transactions);
     }
 
-    // Concrete method: All traders share this behavior.
     public void addTransaction(double amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("Transaction amount cannot be negative.");
@@ -46,8 +41,21 @@ public abstract class Trader {
         this.transactions.add(amount);
     }
 
-    // ABSTRACT METHOD: The "Blank Section of the Form". 
-    // Every subclass (Informal, SemiFormal, Cooperative) MUST write its own version of this.
-    // It throws our Custom Exception if the trader hasn't logged enough sales yet.
+    // 🟢 NEW HELPER METHOD: This allows subclasses to see the total volume safely.
+    protected double getTotalTransactionVolume() {
+        double total = 0;
+        for (double amount : transactions) {
+            total += amount;
+        }
+        return total;
+    }
+
+    // 🟢 NEW HELPER METHOD: This allows subclasses to throw the exception if they don't have enough history.
+    protected void requireMinimumHistory(int minTransactions) throws InsufficientHistoryException {
+        if (transactions.size() < minTransactions) {
+            throw new InsufficientHistoryException("Not enough transactions.");
+        }
+    }
+
     public abstract double calculateDocumentScore() throws InsufficientHistoryException;
 }
