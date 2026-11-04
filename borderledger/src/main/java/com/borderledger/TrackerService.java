@@ -2,6 +2,7 @@ package com.borderledger;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.*;
@@ -11,9 +12,7 @@ import java.util.Map;
 
 public class TrackerService {
     
-    // THE MAP: Stores traders by ID.
     private Map<String, Trader> traders;
-    
     private final Gson gson;
     private final String fileName = "borderledger_data.json";
 
@@ -56,10 +55,16 @@ public class TrackerService {
         }
 
         try (Reader reader = new FileReader(file)) {
-            Type type = new TypeToken<Map<String, Trader>>(){}.getType();
-            traders = gson.fromJson(reader, type);
-            if (traders == null) {
-                traders = new HashMap<>();
+            Type type = new TypeToken<Map<String, Object>>(){}.getType();
+            Map<String, Object> rawMap = gson.fromJson(reader, type);
+            
+            if (rawMap != null) {
+                for (Map.Entry<String, Object> entry : rawMap.entrySet()) {
+                    // Convert the generic Object back into an InformalTrader
+                    JsonObject jsonObject = gson.toJsonTree(entry.getValue()).getAsJsonObject();
+                    Trader t = gson.fromJson(jsonObject, InformalTrader.class);
+                    traders.put(entry.getKey(), t);
+                }
             }
         } catch (IOException e) {
             System.err.println("Error loading data: " + e.getMessage());

@@ -6,21 +6,19 @@ import java.util.Map;
 
 public class App {
     public static void main(String[] args) {
-        // Initialize the service (this loads the JSON file if it exists)
         TrackerService service = new TrackerService();
 
-        // Start Javalin on port 7070 and tell it to use Gson for JSON
         Javalin app = Javalin.create(config -> {
             config.jsonMapper(new JavalinGson());
-            config.staticFiles.add("/public"); // This serves your index.html
+            config.staticFiles.add("/public");
         }).start(7070);
 
-        // 1. GET: Fetch all traders
+        // 1. GET ALL
         app.get("/api/traders", ctx -> {
             ctx.json(service.getAllTraders());
         });
 
-        // 2. GET: Fetch one trader by ID
+        // 2. GET ONE
         app.get("/api/traders/{id}", ctx -> {
             Trader t = service.getTrader(ctx.pathParam("id"));
             if (t != null) {
@@ -30,37 +28,34 @@ public class App {
             }
         });
 
-        // 3. POST: Create a new trader
+        // 3. POST
         app.post("/api/traders", ctx -> {
             Map<String, Object> body = ctx.bodyAsClass(Map.class);
             String id = (String) body.get("id");
             String name = (String) body.get("name");
             
-            // Safely parse the capital amount
             double capital = 0.0;
             if (body.containsKey("capital") && body.get("capital") != null) {
                 capital = Double.parseDouble(body.get("capital").toString());
             }
             
-            // Use Ndame's subclass
             InformalTrader trader = new InformalTrader(id, name, capital);
             service.addTrader(trader);
             ctx.status(201).json(trader);
         });
 
-        // 4. PUT: Update a trader (Requirement placeholder)
+        // 4. PUT (Placeholder)
         app.put("/api/traders/{id}", ctx -> {
             String id = ctx.pathParam("id");
             Trader trader = service.getTrader(id);
             if (trader != null) {
-                // Simple success response to satisfy the endpoint requirement
                 ctx.status(200).json(Map.of("message", "Trader " + id + " updated successfully"));
             } else {
                 ctx.status(404).result("Trader not found");
             }
         });
 
-        // 5. DELETE: Remove a trader
+        // 5. DELETE
         app.delete("/api/traders/{id}", ctx -> {
             String id = ctx.pathParam("id");
             if (service.getTrader(id) != null) {
