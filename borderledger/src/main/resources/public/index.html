@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BorderLedger</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; color: #333; }
+        input, button { padding: 10px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #28a745; color: white; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #218838; }
+        #traderList { margin-top: 20px; }
+        .trader { background: white; padding: 15px; margin-bottom: 10px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #007bff; }
+    </style>
+</head>
+<body>
+    <h1>🌍 BorderLedger Dashboard</h1>
+    <p>Add a new trader to the system:</p>
+    
+    <input type="text" id="traderId" placeholder="Trader ID (e.g. T01)">
+    <input type="text" id="traderName" placeholder="Trader Name">
+    <input type="number" id="traderCapital" placeholder="Starting Capital">
+    <button onclick="addTrader()">Add Trader</button>
+
+    <h3>Registered Traders:</h3>
+    <div id="traderList"></div>
+
+    <script>
+        // This is a fetch GET request to your Javalin backend
+        function loadTraders() {
+            fetch('/api/traders')
+                .then(response => response.json())
+                .then(data => {
+                    const list = document.getElementById('traderList');
+                    list.innerHTML = '';
+                    for (const id in data) {
+                        const t = data[id];
+                        list.innerHTML += `<div class="trader">
+                            <strong>${t.id}</strong> - ${t.name} (Capital: R${t.startingCapital})
+                        </div>`;
+                    }
+                });
+        }
+
+        // This is a fetch POST request
+        function addTrader() {
+            const id = document.getElementById('traderId').value;
+            const name = document.getElementById('traderName').value;
+            const capital = document.getElementById('traderCapital').value;
+
+            fetch('/api/traders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, name: name, capital: capital })
+            }).then(() => {
+                document.getElementById('traderId').value = '';
+                document.getElementById('traderName').value = '';
+                document.getElementById('traderCapital').value = '';
+                loadTraders(); // Refresh the list
+            });
+        }
+
+        // Load traders when the page opens
+        loadTraders();
+    </script>
+</body>
+</html>
