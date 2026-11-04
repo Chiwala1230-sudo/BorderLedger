@@ -1,0 +1,14 @@
+{
+  "T01": {
+    "startingCapital": 500.0,
+    "id": "T01",
+    "name": "Kalaba",
+    "transactions": []
+  },
+  "T02": {
+    "startingCapital": 1000.0,
+    "id": "T02",
+    "name": "Collins",
+    "transactions": []
+  }
+}
